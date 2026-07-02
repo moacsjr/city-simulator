@@ -1,14 +1,17 @@
 import * as THREE from 'three';
+import type { ProgressDriven } from '../evolutive/registry';
 import { RIVER, WORLD_HALF } from '../layout/cityLayout';
+import { createGroundMaterial } from './groundMaterial';
 
-/** Static ground + river strip (placeholder material until the TSL blend in M3). */
-export function createTerrain(): THREE.Group {
+/** Ground (TSL grass→pavement blend) + river strip. */
+export function createTerrain(): { group: THREE.Group; driver: ProgressDriven } {
   const group = new THREE.Group();
   group.name = 'terrain';
 
+  const { material, driver } = createGroundMaterial();
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(WORLD_HALF * 2 + 10, WORLD_HALF * 2 + 10),
-    new THREE.MeshStandardMaterial({ color: 0x4a7c3a, roughness: 1 }),
+    material,
   );
   ground.rotation.x = -Math.PI / 2;
   group.add(ground);
@@ -21,5 +24,5 @@ export function createTerrain(): THREE.Group {
   river.position.set(0, 0.02, RIVER.z);
   group.add(river);
 
-  return group;
+  return { group, driver };
 }
