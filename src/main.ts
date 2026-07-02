@@ -1,10 +1,13 @@
 import { ProgressStore } from './core/progressStore';
 import { Registry } from './evolutive/registry';
 import { createAgriculture } from './instanced/agriculture';
+import { createAnimals } from './instanced/animals';
 import { createForest } from './instanced/forest';
 import { createHouses } from './instanced/houses';
 import { createMarketStalls, createWell } from './instanced/props';
 import { createRoads } from './instanced/roads';
+import { createWalls } from './instanced/walls';
+import { NpcSystem } from './npc/npcSystem';
 import { createCamp } from './landmarks/camp';
 import { createCastle } from './landmarks/castle';
 import { createCathedral } from './landmarks/cathedral';
@@ -31,6 +34,8 @@ const instancedSystems = [
   createMarketStalls(),
   ...createHouses(),
   ...createAgriculture(),
+  ...createWalls(),
+  ...createAnimals(),
 ];
 for (const system of instancedSystems) {
   root.scene.add(system.mesh);
@@ -43,7 +48,14 @@ for (const evolutive of landmarks) {
   registry.add(evolutive);
 }
 
+const npcs = new NpcSystem();
+root.scene.add(npcs.mesh);
+registry.add(npcs);
+
 createControls(store);
 store.subscribe((p) => registry.update(p));
 
-await root.start((dt) => store.tick(dt));
+await root.start((dt) => {
+  store.tick(dt);
+  npcs.tick(dt);
+});
