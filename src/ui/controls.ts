@@ -42,7 +42,15 @@ const STYLES = `
   .cs-label strong { color: #e0a44c; }
 `;
 
-export function createControls(store: ProgressStore, host: HTMLElement = document.body): void {
+export interface ControlsOptions {
+  audio?: { toggleMuted(): boolean; isMuted: boolean };
+}
+
+export function createControls(
+  store: ProgressStore,
+  options: ControlsOptions = {},
+  host: HTMLElement = document.body,
+): void {
   const style = document.createElement('style');
   style.textContent = STYLES;
   document.head.appendChild(style);
@@ -65,6 +73,19 @@ export function createControls(store: ProgressStore, host: HTMLElement = documen
   label.className = 'cs-label';
 
   panel.append(playButton, slider, label);
+
+  if (options.audio) {
+    const audio = options.audio;
+    const muteButton = document.createElement('button');
+    muteButton.type = 'button';
+    muteButton.setAttribute('aria-label', 'Ativar/desativar som');
+    muteButton.textContent = audio.isMuted ? '🔇' : '🔊';
+    muteButton.addEventListener('click', () => {
+      muteButton.textContent = audio.toggleMuted() ? '🔇' : '🔊';
+    });
+    panel.append(muteButton);
+  }
+
   host.appendChild(panel);
 
   const syncPlayIcon = () => {

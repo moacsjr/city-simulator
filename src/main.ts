@@ -1,3 +1,4 @@
+import { Soundtrack } from './audio/soundtrack';
 import { ProgressStore } from './core/progressStore';
 import { Registry } from './evolutive/registry';
 import { createAgriculture } from './instanced/agriculture';
@@ -52,7 +53,12 @@ const npcs = new NpcSystem();
 root.scene.add(npcs.mesh);
 registry.add(npcs);
 
-createControls(store);
+const soundtrack = new Soundtrack();
+registry.add(soundtrack);
+// Autoplay policy: the AudioContext may only start after a user gesture.
+document.addEventListener('pointerdown', () => void soundtrack.initialize(), { once: true });
+
+createControls(store, { audio: soundtrack });
 store.subscribe((p) => registry.update(p));
 
 await root.start((dt) => {
