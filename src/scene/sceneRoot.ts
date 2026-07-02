@@ -9,12 +9,15 @@ export interface SceneRoot {
   start(onFrame: (dtSeconds: number) => void): Promise<void>;
 }
 
-export function createSceneRoot(
+export async function createSceneRoot(
   pixelRatioCap = 2,
   container: HTMLElement = document.body,
-): SceneRoot {
-  // WebGPURenderer falls back to WebGL2 automatically when WebGPU is unavailable.
-  const renderer = new WebGPURenderer({ antialias: true });
+): Promise<SceneRoot> {
+  // WebGPURenderer only falls back to WebGL2 when navigator.gpu is absent;
+  // some environments expose navigator.gpu but return a null adapter — probe
+  // it and force the fallback ourselves in that case.
+  const adapter = navigator.gpu ? await navigator.gpu.requestAdapter().catch(() => null) : null;
+  const renderer = new WebGPURenderer({ antialias: true, forceWebGL: adapter === null });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, pixelRatioCap));
   renderer.setSize(window.innerWidth, window.innerHeight);
   container.appendChild(renderer.domElement);

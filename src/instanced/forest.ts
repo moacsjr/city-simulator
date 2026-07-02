@@ -29,9 +29,9 @@ export function createForest(seed = 1, count = 1200): InstancedEvolutive {
       z: tree.z,
       rotationY: tree.rotationY,
       yOffset: TREE_HEIGHT / 2,
-      appearAt: 0,
-      growStart: 0,
-      growEnd: 0.001, // already fully grown at p=0
+      appearAt: -1,
+      growStart: -1,
+      growEnd: 0, // grow window ends at 0 → already fully grown when p=0
       maxScale: tree.scale,
       retireAt: tree.retireAt,
       color: { from: LEAF_GREEN, to: LEAF_AUTUMN, start: 70, end: 80 },

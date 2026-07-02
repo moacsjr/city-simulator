@@ -29,7 +29,7 @@ import { PerfHud } from './ui/perfHud';
 
 const quality = detectQuality();
 const store = new ProgressStore();
-const root = createSceneRoot(quality.pixelRatioCap);
+const root = await createSceneRoot(quality.pixelRatioCap);
 const registry = new Registry();
 
 registry.add(new LightingDirector(root.scene));
