@@ -3,6 +3,12 @@ import { ProgressStore } from './core/progressStore';
 import { Registry } from './evolutive/registry';
 import { createAgriculture } from './instanced/agriculture';
 import { createAnimals } from './instanced/animals';
+import {
+  createBanners,
+  createBridges,
+  createFestivalProps,
+  createScaffolds,
+} from './instanced/festival';
 import { createForest } from './instanced/forest';
 import { createHouses } from './instanced/houses';
 import { createMarketStalls, createWell } from './instanced/props';
@@ -13,6 +19,7 @@ import { createCamp } from './landmarks/camp';
 import { createCastle } from './landmarks/castle';
 import { createCathedral } from './landmarks/cathedral';
 import { createTownHall } from './landmarks/townHall';
+import { CameraDirector } from './scene/cameraDirector';
 import { LightingDirector } from './scene/lightingDirector';
 import { createSceneRoot } from './scene/sceneRoot';
 import { createTerrain } from './scene/terrain';
@@ -37,6 +44,10 @@ const instancedSystems = [
   ...createAgriculture(),
   ...createWalls(),
   ...createAnimals(),
+  ...createBridges(),
+  ...createFestivalProps(),
+  createBanners(),
+  createScaffolds(),
 ];
 for (const system of instancedSystems) {
   root.scene.add(system.mesh);
@@ -53,6 +64,9 @@ const npcs = new NpcSystem();
 root.scene.add(npcs.mesh);
 registry.add(npcs);
 
+const cameraDirector = new CameraDirector(root.camera);
+registry.add(cameraDirector);
+
 const soundtrack = new Soundtrack();
 registry.add(soundtrack);
 // Autoplay policy: the AudioContext may only start after a user gesture.
@@ -64,4 +78,5 @@ store.subscribe((p) => registry.update(p));
 await root.start((dt) => {
   store.tick(dt);
   npcs.tick(dt);
+  cameraDirector.tick(dt);
 });

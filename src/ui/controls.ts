@@ -1,3 +1,4 @@
+import { activeEventAt } from '../core/eventDirector';
 import type { ProgressStore } from '../core/progressStore';
 import { stageAt } from '../core/stageData';
 
@@ -105,7 +106,9 @@ export function createControls(
 
   store.subscribe((p) => {
     slider.value = String(p);
-    label.innerHTML = `<strong>${Math.round(p)}%</strong> — ${stageAt(p).name}`;
+    const event = activeEventAt(p);
+    const eventSuffix = event ? `<br><em>${event.name}</em>` : '';
+    label.innerHTML = `<strong>${Math.round(p)}%</strong> — ${stageAt(p).name}${eventSuffix}`;
     syncPlayIcon();
   });
 }
