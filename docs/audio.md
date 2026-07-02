@@ -15,6 +15,17 @@ Requisitos: loop sem emenda audível (crossfade interno no arquivo ajuda),
 mono ou estéreo, ~30 s+, volume normalizado entre as faixas (o motor não
 compensa loudness). Fontes CC0 sugeridas: freesound.org, pixabay.com/sound-effects.
 
+## Arquivos atuais (CC0, baixados via Openverse/Freesound em 2026-07-02)
+
+| Arquivo                 | Fonte (freesound.org)                                         |
+| ----------------------- | ------------------------------------------------------------- |
+| `wilderness.mp3`        | #460178 — forest ambience, steady breeze, Sweden (loop)       |
+| `hamlet.mp3`            | #607920 — Morning Village Ambience, Dog Barking               |
+| `urban_market.mp3`      | #159614 — Venditori Campo de' Fiori (feira, vendedores)       |
+| `medieval_festival.mp3` | #703643 — Sound environment of a festival of medieval culture |
+
+Licença CC0 — sem atribuição obrigatória. Substitua à vontade por faixas melhores.
+
 **Sem os arquivos o motor funciona igual**: `proceduralAmbience.ts` sintetiza
 loops substitutos via `OfflineAudioContext` (ruído filtrado, batidas, sinos).
 Trocar por mp3 reais não exige mudança de código.

@@ -11,11 +11,19 @@ import {
 } from './instanced/festival';
 import { createForest } from './instanced/forest';
 import { createHouses } from './instanced/houses';
-import { createMarketStalls, createWell } from './instanced/props';
+import {
+  createDock,
+  createMarketStalls,
+  createStable,
+  createTavern,
+  createWell,
+} from './instanced/props';
 import { createRoads } from './instanced/roads';
 import { createWalls } from './instanced/walls';
 import { NpcSystem } from './npc/npcSystem';
 import { createCamp } from './landmarks/camp';
+import { createWatermill, createWindmill } from './landmarks/mills';
+import { AmbientAnimator } from './scene/ambientAnimator';
 import { createCastle } from './landmarks/castle';
 import { createCathedral } from './landmarks/cathedral';
 import { createTownHall } from './landmarks/townHall';
@@ -38,10 +46,14 @@ const terrain = createTerrain();
 root.scene.add(terrain.group);
 registry.add(terrain.driver);
 
+const banners = createBanners();
 const instancedSystems = [
   createForest(1, quality.treeCount),
   createRoads(),
   createWell(),
+  createTavern(),
+  createStable(),
+  createDock(),
   createMarketStalls(),
   ...createHouses(),
   ...createAgriculture(),
@@ -49,7 +61,7 @@ const instancedSystems = [
   ...createAnimals(),
   ...createBridges(),
   ...createFestivalProps(),
-  createBanners(),
+  banners,
   createScaffolds(),
 ];
 for (const system of instancedSystems) {
@@ -57,11 +69,25 @@ for (const system of instancedSystems) {
   registry.add(system);
 }
 
-const landmarks = [...createCamp(), ...createCastle(), ...createCathedral(), createTownHall()];
+const watermill = createWatermill();
+const windmill = createWindmill();
+const landmarks = [
+  ...createCamp(),
+  ...createCastle(),
+  ...createCathedral(),
+  createTownHall(),
+  watermill.evolutive,
+  windmill.evolutive,
+];
 for (const evolutive of landmarks) {
   root.scene.add(evolutive.object);
   registry.add(evolutive);
 }
+
+const ambient = new AmbientAnimator();
+ambient.addSway(banners);
+ambient.addSpinner(watermill.spinner, windmill.spinner);
+root.scene.add(ambient.smoke.mesh);
 
 const npcs = new NpcSystem(quality.decisionBudget);
 root.scene.add(npcs.mesh);
@@ -84,5 +110,6 @@ await root.start((dt) => {
   store.tick(dt);
   npcs.tick(dt);
   cameraDirector.tick(dt);
+  ambient.tick(dt, store.value);
   hud?.tick(dt, root.renderer);
 });

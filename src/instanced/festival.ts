@@ -38,7 +38,10 @@ export function createBanners(seed = 53): InstancedEvolutive {
     coloredBox(0.12, 3.4, 0.12, 0x6e5a3a),
     coloredBox(0.9, 0.6, 0.05, 0xffffff, 3.0),
   );
-  const banners = new InstancedEvolutive(geometry, poolMaterial(), instances);
+  const banners = new InstancedEvolutive(geometry, poolMaterial(), instances, {
+    amplitude: 0.08,
+    frequency: 2.4,
+  });
   banners.mesh.name = 'banners';
   return banners;
 }
@@ -89,7 +92,6 @@ export function createFestivalProps(): InstancedEvolutive[] {
 
   return [fountain, boats];
 }
-
 
 /** Wooden bridge (Growing Village) → stone bridge (Expansion) over the river. */
 export function createBridges(): InstancedEvolutive[] {
@@ -157,4 +159,3 @@ export function createScaffolds(): InstancedEvolutive {
   scaffolds.mesh.name = 'scaffolds';
   return scaffolds;
 }
-
