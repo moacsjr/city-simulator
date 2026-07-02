@@ -3,6 +3,7 @@ import { MAX_POPULATION, populationAt } from '../lib/demographics';
 import { mulberry32, randRange } from '../lib/random';
 import { mergeParts, paint, poolMaterial, translated } from '../instanced/geometryKit';
 import type { ProgressDriven } from '../evolutive/registry';
+import { FrameBudget } from '../perf/updateScheduler';
 import { classCountsAt, CLASS_COLOR, pickNext, type NpcClass } from './behaviors';
 import { activeNodes, buildWaypointGraph, neighborsAt, type WaypointGraph } from './waypointGraph';
 
@@ -31,8 +32,10 @@ export class NpcSystem implements ProgressDriven {
   private readonly rng = mulberry32(97);
   private activeCount = 0;
   private progress = 0;
+  private readonly decisions: FrameBudget;
 
-  constructor() {
+  constructor(decisionBudget = 32) {
+    this.decisions = new FrameBudget(decisionBudget);
     this.graph = buildWaypointGraph();
     const geometry = mergeParts(
       translated(paint(new THREE.CapsuleGeometry(0.22, 0.5, 3, 8), 0xffffff), 0, 0.47, 0),
@@ -79,6 +82,7 @@ export class NpcSystem implements ProgressDriven {
 
   /** Clock-driven: locomotion along the unlocked waypoint graph. */
   tick(dt: number): void {
+    this.decisions.reset();
     const nodes = this.graph.nodes;
     for (let i = 0; i < this.activeCount; i++) {
       const npc = this.npcs[i];
@@ -86,7 +90,8 @@ export class NpcSystem implements ProgressDriven {
       const to = nodes[npc.to];
       const distance = Math.hypot(to.x - from.x, to.z - from.z);
 
-      if (npc.t >= 1 || distance < 1e-3) {
+      // path decisions are budgeted per frame; overflow NPCs idle one frame
+      if ((npc.t >= 1 || distance < 1e-3) && this.decisions.take()) {
         const neighborIdx = neighborsAt(this.graph, npc.to, this.progress);
         if (neighborIdx.length > 0) {
           const options = neighborIdx.map((index) => ({ index, tag: nodes[index].tag }));

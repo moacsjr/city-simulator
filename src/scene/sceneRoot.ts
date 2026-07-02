@@ -9,10 +9,13 @@ export interface SceneRoot {
   start(onFrame: (dtSeconds: number) => void): Promise<void>;
 }
 
-export function createSceneRoot(container: HTMLElement = document.body): SceneRoot {
+export function createSceneRoot(
+  pixelRatioCap = 2,
+  container: HTMLElement = document.body,
+): SceneRoot {
   // WebGPURenderer falls back to WebGL2 automatically when WebGPU is unavailable.
   const renderer = new WebGPURenderer({ antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, pixelRatioCap));
   renderer.setSize(window.innerWidth, window.innerHeight);
   container.appendChild(renderer.domElement);
 

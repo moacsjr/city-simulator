@@ -23,10 +23,13 @@ import { CameraDirector } from './scene/cameraDirector';
 import { LightingDirector } from './scene/lightingDirector';
 import { createSceneRoot } from './scene/sceneRoot';
 import { createTerrain } from './scene/terrain';
+import { detectQuality } from './perf/updateScheduler';
 import { createControls } from './ui/controls';
+import { PerfHud } from './ui/perfHud';
 
+const quality = detectQuality();
 const store = new ProgressStore();
-const root = createSceneRoot();
+const root = createSceneRoot(quality.pixelRatioCap);
 const registry = new Registry();
 
 registry.add(new LightingDirector(root.scene));
@@ -36,7 +39,7 @@ root.scene.add(terrain.group);
 registry.add(terrain.driver);
 
 const instancedSystems = [
-  createForest(),
+  createForest(1, quality.treeCount),
   createRoads(),
   createWell(),
   createMarketStalls(),
@@ -60,7 +63,7 @@ for (const evolutive of landmarks) {
   registry.add(evolutive);
 }
 
-const npcs = new NpcSystem();
+const npcs = new NpcSystem(quality.decisionBudget);
 root.scene.add(npcs.mesh);
 registry.add(npcs);
 
@@ -75,8 +78,11 @@ document.addEventListener('pointerdown', () => void soundtrack.initialize(), { o
 createControls(store, { audio: soundtrack });
 store.subscribe((p) => registry.update(p));
 
+const hud = PerfHud.enabled() ? new PerfHud() : null;
+
 await root.start((dt) => {
   store.tick(dt);
   npcs.tick(dt);
   cameraDirector.tick(dt);
+  hud?.tick(dt, root.renderer);
 });
