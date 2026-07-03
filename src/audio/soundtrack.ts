@@ -27,7 +27,9 @@ export class Soundtrack implements ProgressDriven {
       TRACKS.map(async (track, i) => {
         let buffer: AudioBuffer;
         try {
-          const response = await fetch(track.url);
+          // resolve against Vite's base so subpath hosting (GitHub Pages) works
+          const url = import.meta.env.BASE_URL + track.url.replace(/^\//, '');
+          const response = await fetch(url);
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           buffer = await context.decodeAudioData(await response.arrayBuffer());
         } catch {
