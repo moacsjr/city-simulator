@@ -3,3 +3,4 @@ dist/
 *.local
 CLAUDE.local.md
 .claude/settings.local.json
+screenshots/

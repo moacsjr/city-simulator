@@ -35,7 +35,7 @@ function romanesqueChurch(): THREE.Object3D {
   return g;
 }
 
-function gothicCathedral(): THREE.Object3D {
+function gothicCathedral(): { group: THREE.Object3D; bellPivot: THREE.Object3D } {
   const g = new THREE.Group();
   g.add(part(new THREE.BoxGeometry(5, 6, 10), STONE, 0, 3, 0));
   g.add(part(new THREE.ConeGeometry(4, 2.4, 4), ROOF_SLATE, 0, 7.2, 0));
@@ -44,14 +44,29 @@ function gothicCathedral(): THREE.Object3D {
     g.add(part(new THREE.ConeGeometry(1.3, 3.2, 6), ROOF_SLATE, dx, 10.6, 4.6));
   }
   g.add(part(new THREE.ConeGeometry(0.9, 4, 6), ROOF_SLATE, 0, 10.2, -1)); // crossing spire
-  return g;
+
+  // bell hanging between the front towers; pivot swings from the consecration on
+  const bellPivot = new THREE.Group();
+  const bell = part(new THREE.ConeGeometry(0.5, 0.7, 8), 0xc9a227, 0, -0.55, 0);
+  bellPivot.add(bell);
+  bellPivot.position.set(0, 8.6, 4.6);
+  g.add(bellPivot);
+
+  return { group: g, bellPivot };
 }
 
-export function createCathedral(): EvolutiveObject[] {
-  return chainOfGroups(SITES.cathedral, [
+export interface Cathedral {
+  evolutives: EvolutiveObject[];
+  bellPivot: THREE.Object3D;
+}
+
+export function createCathedral(): Cathedral {
+  const gothic = gothicCathedral();
+  const evolutives = chainOfGroups(SITES.cathedral, [
     { at: 30, build: chapel },
     { at: 45, build: parishChurch },
     { at: 58, build: romanesqueChurch },
-    { at: 76, build: gothicCathedral },
+    { at: 76, build: () => gothic.group },
   ]);
+  return { evolutives, bellPivot: gothic.bellPivot };
 }

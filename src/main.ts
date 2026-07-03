@@ -23,6 +23,7 @@ import { createWalls } from './instanced/walls';
 import { NpcSystem } from './npc/npcSystem';
 import { createCamp } from './landmarks/camp';
 import { createWatermill, createWindmill } from './landmarks/mills';
+import { RIVER } from './layout/cityLayout';
 import { AmbientAnimator } from './scene/ambientAnimator';
 import { createCastle } from './landmarks/castle';
 import { createCathedral } from './landmarks/cathedral';
@@ -71,10 +72,11 @@ for (const system of instancedSystems) {
 
 const watermill = createWatermill();
 const windmill = createWindmill();
+const cathedral = createCathedral();
 const landmarks = [
   ...createCamp(),
   ...createCastle(),
-  ...createCathedral(),
+  ...cathedral.evolutives,
   createTownHall(),
   watermill.evolutive,
   windmill.evolutive,
@@ -84,10 +86,11 @@ for (const evolutive of landmarks) {
   registry.add(evolutive);
 }
 
-const ambient = new AmbientAnimator();
+const ambient = new AmbientAnimator(RIVER);
 ambient.addSway(banners);
 ambient.addSpinner(watermill.spinner, windmill.spinner);
-root.scene.add(ambient.smoke.mesh);
+ambient.addOscillator({ pivot: cathedral.bellPivot, amplitude: 0.5, frequency: 4, from: 84 });
+root.scene.add(ambient.smoke.mesh, ambient.leaves.mesh, ambient.foam.mesh);
 
 const npcs = new NpcSystem(quality.decisionBudget);
 root.scene.add(npcs.mesh);
