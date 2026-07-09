@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { EvolutiveObject } from '../evolutive/evolutiveObject';
 import { SITES } from '../layout/cityLayout';
+import { EMPTY_MODELS, type ModelLibrary } from '../models/modelLibrary';
 import { chainOfGroups } from './chainOfGroups';
 import { DARK_STONE, DARK_WOOD, part, ROOF_SLATE, STONE, WOOD } from './buildKit';
 
@@ -47,6 +48,7 @@ function gothicCathedral(): { group: THREE.Object3D; bellPivot: THREE.Object3D }
 
   // bell hanging between the front towers; pivot swings from the consecration on
   const bellPivot = new THREE.Group();
+  bellPivot.name = 'bell';
   const bell = part(new THREE.ConeGeometry(0.5, 0.7, 8), 0xc9a227, 0, -0.55, 0);
   bellPivot.add(bell);
   bellPivot.position.set(0, 8.6, 4.6);
@@ -60,12 +62,17 @@ export interface Cathedral {
   bellPivot: THREE.Object3D;
 }
 
-export function createCathedral(): Cathedral {
-  const gothic = gothicCathedral();
+export function createCathedral(models: ModelLibrary = EMPTY_MODELS): Cathedral {
+  // Model convention: a node named `bell` in cathedral-s3.glb becomes the
+  // swinging pivot; absent → detached dummy (model shows, bell just doesn't swing).
+  const gothicModel = models.landmark('cathedral-s3');
+  const gothic = gothicModel
+    ? { group: gothicModel.object, bellPivot: gothicModel.findPivot('bell') ?? new THREE.Group() }
+    : gothicCathedral();
   const evolutives = chainOfGroups(SITES.cathedral, [
-    { at: 30, build: chapel },
-    { at: 45, build: parishChurch },
-    { at: 58, build: romanesqueChurch },
+    { at: 30, build: () => models.landmark('cathedral-s0')?.object ?? chapel() },
+    { at: 45, build: () => models.landmark('cathedral-s1')?.object ?? parishChurch() },
+    { at: 58, build: () => models.landmark('cathedral-s2')?.object ?? romanesqueChurch() },
     { at: 76, build: () => gothic.group },
   ]);
   return { evolutives, bellPivot: gothic.bellPivot };

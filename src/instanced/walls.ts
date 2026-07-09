@@ -1,4 +1,5 @@
 import { RIVER } from '../layout/cityLayout';
+import { EMPTY_MODELS, type ModelLibrary } from '../models/modelLibrary';
 import { coloredBox, coloredCone, mergeParts, poolMaterial } from './geometryKit';
 import { InstancedEvolutive, type InstanceDescriptor } from './instancedEvolutive';
 
@@ -12,7 +13,7 @@ const DARK_STONE = 0x7b756b;
  * angle, spec "first wall stones begin rising" at 50), towers at 52→60,
  * gate towers flank the north road. Gaps where the river crosses the ring.
  */
-export function createWalls(): InstancedEvolutive[] {
+export function createWalls(models: ModelLibrary = EMPTY_MODELS): InstancedEvolutive[] {
   const walls: InstanceDescriptor[] = [];
   const towers: InstanceDescriptor[] = [];
 
@@ -57,18 +58,24 @@ export function createWalls(): InstancedEvolutive[] {
     });
   }
 
-  const wallPool = new InstancedEvolutive(
-    mergeParts(coloredBox(4.4, 3.2, 1.2, STONE), coloredBox(4.4, 0.5, 0.4, DARK_STONE, 3.4)),
-    poolMaterial(),
-    walls,
-  );
+  const wallAsset = models.pool('wall', () => ({
+    geometry: mergeParts(
+      coloredBox(4.4, 3.2, 1.2, STONE),
+      coloredBox(4.4, 0.5, 0.4, DARK_STONE, 3.4),
+    ),
+    material: poolMaterial(),
+  }));
+  const wallPool = new InstancedEvolutive(wallAsset.geometry, wallAsset.material, walls);
   wallPool.mesh.name = 'walls';
 
-  const towerPool = new InstancedEvolutive(
-    mergeParts(coloredBox(2.2, 5, 2.2, DARK_STONE), coloredCone(1.8, 1.6, 4, 0x5a6470, 5, true)),
-    poolMaterial(),
-    towers,
-  );
+  const towerAsset = models.pool('wall-tower', () => ({
+    geometry: mergeParts(
+      coloredBox(2.2, 5, 2.2, DARK_STONE),
+      coloredCone(1.8, 1.6, 4, 0x5a6470, 5, true),
+    ),
+    material: poolMaterial(),
+  }));
+  const towerPool = new InstancedEvolutive(towerAsset.geometry, towerAsset.material, towers);
   towerPool.mesh.name = 'wall-towers';
 
   return [wallPool, towerPool];

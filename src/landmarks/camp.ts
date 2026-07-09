@@ -1,27 +1,26 @@
 import * as THREE from 'three';
 import { EvolutiveObject } from '../evolutive/evolutiveObject';
+import { EMPTY_MODELS, type ModelLibrary } from '../models/modelLibrary';
 
-/**
- * Stage-1 pioneer camp: rudimentary hut + campfire near the origin.
- * Both retire early — the growing settlement (M3 house chains) replaces them.
- */
-export function createCamp(): EvolutiveObject[] {
-  const hutRoofMaterial = new THREE.MeshStandardMaterial({ color: 0x7a5b34, roughness: 1 });
+function buildHut(): THREE.Object3D {
   const hut = new THREE.Group();
-  hut.name = 'pioneer-hut';
   const walls = new THREE.Mesh(
     new THREE.BoxGeometry(2.2, 1.4, 1.8),
     new THREE.MeshStandardMaterial({ color: 0x8a6a42, roughness: 1 }),
   );
   walls.position.y = 0.7;
-  const roof = new THREE.Mesh(new THREE.ConeGeometry(1.8, 1.1, 4), hutRoofMaterial);
+  const roof = new THREE.Mesh(
+    new THREE.ConeGeometry(1.8, 1.1, 4),
+    new THREE.MeshStandardMaterial({ color: 0x7a5b34, roughness: 1 }),
+  );
   roof.position.y = 1.95;
   roof.rotation.y = Math.PI / 4;
   hut.add(walls, roof);
-  hut.position.set(2.5, 0, 1.5);
+  return hut;
+}
 
+function buildFire(): THREE.Object3D {
   const fire = new THREE.Group();
-  fire.name = 'campfire';
   const logs = new THREE.Mesh(
     new THREE.CylinderGeometry(0.45, 0.55, 0.25, 7),
     new THREE.MeshStandardMaterial({ color: 0x4c3a26, roughness: 1 }),
@@ -37,6 +36,20 @@ export function createCamp(): EvolutiveObject[] {
   );
   flame.position.y = 0.55;
   fire.add(logs, flame);
+  return fire;
+}
+
+/**
+ * Stage-1 pioneer camp: rudimentary hut + campfire near the origin.
+ * Both retire early — the growing settlement (M3 house chains) replaces them.
+ */
+export function createCamp(models: ModelLibrary = EMPTY_MODELS): EvolutiveObject[] {
+  const hut = models.landmark('camp-hut')?.object ?? buildHut();
+  hut.name = 'pioneer-hut';
+  hut.position.set(2.5, 0, 1.5);
+
+  const fire = models.landmark('campfire')?.object ?? buildFire();
+  fire.name = 'campfire';
   fire.position.set(-1.5, 0, -1);
 
   return [

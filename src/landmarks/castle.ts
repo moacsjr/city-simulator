@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { EvolutiveObject } from '../evolutive/evolutiveObject';
 import { SITES } from '../layout/cityLayout';
+import { EMPTY_MODELS, type ModelLibrary } from '../models/modelLibrary';
 import { chainOfGroups } from './chainOfGroups';
 import { DARK_STONE, DARK_WOOD, part, ROOF_SLATE, STONE, WOOD } from './buildKit';
 
@@ -48,11 +49,11 @@ function seigneurialComplex(): THREE.Object3D {
   return g;
 }
 
-export function createCastle(): EvolutiveObject[] {
+export function createCastle(models: ModelLibrary = EMPTY_MODELS): EvolutiveObject[] {
   return chainOfGroups(SITES.castle, [
-    { at: 22, build: watchtower },
-    { at: 42, build: palisadeFort },
-    { at: 62, build: militaryCastle },
-    { at: 82, build: seigneurialComplex },
+    { at: 22, build: () => models.landmark('castle-s0')?.object ?? watchtower() },
+    { at: 42, build: () => models.landmark('castle-s1')?.object ?? palisadeFort() },
+    { at: 62, build: () => models.landmark('castle-s2')?.object ?? militaryCastle() },
+    { at: 82, build: () => models.landmark('castle-s3')?.object ?? seigneurialComplex() },
   ]);
 }

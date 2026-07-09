@@ -2,11 +2,13 @@ import type * as THREE from 'three';
 import { chainWindows, HOUSE_BANDS } from '../lib/chains';
 import { mulberry32, randRange } from '../lib/random';
 import { generateHousePlots } from '../layout/cityLayout';
+import type { InstancedModelId } from '../models/manifest';
+import { EMPTY_MODELS, type ModelLibrary } from '../models/modelLibrary';
 import { coloredBox, coloredCone, mergeParts, poolMaterial } from './geometryKit';
 import { InstancedEvolutive, type InstanceDescriptor } from './instancedEvolutive';
 
 /** House chain (spec Table 2): hut → wood house → beam house → stone house → townhouse. */
-function levelGeometry(level: number): THREE.BufferGeometry {
+export function levelGeometry(level: number): THREE.BufferGeometry {
   switch (level) {
     case 0: // branch/thatch hut
       return coloredCone(1.1, 1.6, 5, 0x8a6f45, 0);
@@ -36,7 +38,11 @@ function levelGeometry(level: number): THREE.BufferGeometry {
 }
 
 /** 5 instanced pools sharing the same plots; levels hand off per chainWindows. */
-export function createHouses(seed = 11, plotCount = 140): InstancedEvolutive[] {
+export function createHouses(
+  seed = 11,
+  plotCount = 140,
+  models: ModelLibrary = EMPTY_MODELS,
+): InstancedEvolutive[] {
   const plots = generateHousePlots(seed, plotCount);
   const rng = mulberry32(seed * 7);
   const perLevel: InstanceDescriptor[][] = HOUSE_BANDS.map(() => []);
@@ -55,10 +61,15 @@ export function createHouses(seed = 11, plotCount = 140): InstancedEvolutive[] {
   }
 
   return perLevel
-    .filter((instances) => instances.length > 0)
     .map((instances, level) => {
-      const pool = new InstancedEvolutive(levelGeometry(level), poolMaterial(), instances);
+      if (instances.length === 0) return null;
+      const asset = models.pool(`house-l${level}` as InstancedModelId, () => ({
+        geometry: levelGeometry(level),
+        material: poolMaterial(),
+      }));
+      const pool = new InstancedEvolutive(asset.geometry, asset.material, instances);
       pool.mesh.name = `houses-l${level}`;
       return pool;
-    });
+    })
+    .filter((pool): pool is InstancedEvolutive => pool !== null);
 }

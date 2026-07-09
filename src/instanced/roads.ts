@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { generateRoadSegments } from '../layout/cityLayout';
+import { EMPTY_MODELS, type ModelLibrary } from '../models/modelLibrary';
 import { InstancedEvolutive } from './instancedEvolutive';
 
 const DIRT = 0x7a6242;
@@ -10,14 +11,16 @@ const STONE = 0x8d8578;
  * dirt → granite over the segment's own window (spec: no material swaps;
  * blend driven by progress). Segments unlock outward from the center.
  */
-export function createRoads(): InstancedEvolutive {
+export function createRoads(models: ModelLibrary = EMPTY_MODELS): InstancedEvolutive {
   const segments = generateRoadSegments();
-  const geometry = new THREE.BoxGeometry(3, 0.06, 2.1);
-  const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 });
+  const asset = models.pool('road', () => ({
+    geometry: new THREE.BoxGeometry(3, 0.06, 2.1),
+    material: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }),
+  }));
 
   const roads = new InstancedEvolutive(
-    geometry,
-    material,
+    asset.geometry,
+    asset.material,
     segments.map((seg) => ({
       x: seg.x,
       z: seg.z,

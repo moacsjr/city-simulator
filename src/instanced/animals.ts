@@ -1,11 +1,15 @@
 import { mulberry32, randRange } from '../lib/random';
 import { generateFieldPlots } from '../layout/cityLayout';
+import { EMPTY_MODELS, type ModelLibrary } from '../models/modelLibrary';
 import { coloredBox, mergeParts, paint, poolMaterial, translated } from './geometryKit';
 import { InstancedEvolutive, type InstanceDescriptor } from './instancedEvolutive';
 import * as THREE from 'three';
 
 /** Farm animals as instanced pools: chickens near the camp, livestock in fields. */
-export function createAnimals(seed = 41): InstancedEvolutive[] {
+export function createAnimals(
+  seed = 41,
+  models: ModelLibrary = EMPTY_MODELS,
+): InstancedEvolutive[] {
   const rng = mulberry32(seed);
 
   const chickens: InstanceDescriptor[] = [];
@@ -23,12 +27,16 @@ export function createAnimals(seed = 41): InstancedEvolutive[] {
       maxScale: randRange(rng, 0.8, 1.1),
     });
   }
-  const chickenPool = new InstancedEvolutive(
-    mergeParts(
+  const chickenAsset = models.pool('chicken', () => ({
+    geometry: mergeParts(
       translated(paint(new THREE.SphereGeometry(0.16, 6, 5), 0xf2ede2), 0, 0.16, 0),
       translated(paint(new THREE.ConeGeometry(0.05, 0.1, 4), 0xd08030), 0, 0.24, 0.16),
     ),
-    poolMaterial(),
+    material: poolMaterial(),
+  }));
+  const chickenPool = new InstancedEvolutive(
+    chickenAsset.geometry,
+    chickenAsset.material,
     chickens,
   );
   chickenPool.mesh.name = 'chickens';
@@ -50,12 +58,16 @@ export function createAnimals(seed = 41): InstancedEvolutive[] {
       });
     }
   }
-  const livestockPool = new InstancedEvolutive(
-    mergeParts(
+  const livestockAsset = models.pool('livestock', () => ({
+    geometry: mergeParts(
       coloredBox(0.7, 0.45, 0.4, 0xd8d3c8, 0.45),
       translated(paint(new THREE.SphereGeometry(0.16, 6, 5), 0xc9c2b4), 0, 0.72, 0.3),
     ),
-    poolMaterial(),
+    material: poolMaterial(),
+  }));
+  const livestockPool = new InstancedEvolutive(
+    livestockAsset.geometry,
+    livestockAsset.material,
     livestock,
   );
   livestockPool.mesh.name = 'livestock';

@@ -7,11 +7,12 @@
  *   a `vite preview` URL). Screenshots land in screenshots/.
  */
 import { mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const BASE_URL = process.argv[2] ?? 'http://localhost:5173';
 const GOLDEN_PROGRESS = [0, 15, 30, 45, 50, 60, 75, 85, 100];
-const OUT_DIR = new URL('../screenshots/', import.meta.url).pathname;
+const OUT_DIR = fileURLToPath(new URL('../screenshots/', import.meta.url));
 
 mkdirSync(OUT_DIR, { recursive: true });
 

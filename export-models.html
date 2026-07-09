@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>City Simulator — model templates</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 640px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      .row {
+        margin: 0.25rem 0;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+      }
+      #download-all {
+        font-weight: 600;
+        padding: 0.4rem 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Model templates (.glb)</h1>
+    <p>
+      Dev-only page: exports each procedural asset as an editable .glb starter file. Edit one in
+      Blender, then drop it in <code>public/assets/models/&lt;id&gt;.glb</code> to swap the object.
+      See <code>docs/models.md</code>.
+    </p>
+    <p><button id="download-all">Baixar todos</button> <span id="status"></span></p>
+    <div id="list"></div>
+    <script type="module" src="/src/tools/exportTemplates.ts"></script>
+  </body>
+</html>

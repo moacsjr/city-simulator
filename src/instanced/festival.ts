@@ -1,12 +1,13 @@
 import { mulberry32, randRange } from '../lib/random';
 import { PLAZA_RADIUS, RIVER, SITES } from '../layout/cityLayout';
+import { EMPTY_MODELS, type ModelLibrary } from '../models/modelLibrary';
 import { coloredBox, coloredCone, mergeParts, poolMaterial } from './geometryKit';
 import { InstancedEvolutive, type InstanceDescriptor } from './instancedEvolutive';
 
 const BANNER_COLORS = [0xb03a3a, 0x3a5fb0, 0xc9a227, 0x5a3ab0];
 
 /** Festival layer (≥90%): banner poles around the plaza and along the walls. */
-export function createBanners(seed = 53): InstancedEvolutive {
+export function createBanners(seed = 53, models: ModelLibrary = EMPTY_MODELS): InstancedEvolutive {
   const rng = mulberry32(seed);
   const instances: InstanceDescriptor[] = [];
   const spots: Array<[number, number]> = [];
@@ -34,11 +35,14 @@ export function createBanners(seed = 53): InstancedEvolutive {
       color: { from: hex, to: hex, start: 0, end: 1 },
     });
   }
-  const geometry = mergeParts(
-    coloredBox(0.12, 3.4, 0.12, 0x6e5a3a),
-    coloredBox(0.9, 0.6, 0.05, 0xffffff, 3.0),
-  );
-  const banners = new InstancedEvolutive(geometry, poolMaterial(), instances, {
+  const asset = models.pool('banner', () => ({
+    geometry: mergeParts(
+      coloredBox(0.12, 3.4, 0.12, 0x6e5a3a),
+      coloredBox(0.9, 0.6, 0.05, 0xffffff, 3.0),
+    ),
+    material: poolMaterial(),
+  }));
+  const banners = new InstancedEvolutive(asset.geometry, asset.material, instances, {
     amplitude: 0.08,
     frequency: 2.4,
   });
@@ -47,24 +51,29 @@ export function createBanners(seed = 53): InstancedEvolutive {
 }
 
 /** Plaza fountain, decorated river boats, and the dock boat (40%+). */
-export function createFestivalProps(): InstancedEvolutive[] {
-  const fountain = new InstancedEvolutive(
-    mergeParts(
+export function createFestivalProps(models: ModelLibrary = EMPTY_MODELS): InstancedEvolutive[] {
+  const fountainAsset = models.pool('fountain', () => ({
+    geometry: mergeParts(
       coloredBox(2.2, 0.5, 2.2, 0x9d968a),
       coloredBox(1.6, 0.15, 1.6, 0x4a90c2, 0.55),
       coloredCone(0.35, 1.1, 6, 0x9d968a, 0.5),
     ),
-    poolMaterial(),
-    [{ x: 0, z: 0, appearAt: 92, growStart: 92, growEnd: 95, maxScale: 1 }],
-  );
+    material: poolMaterial(),
+  }));
+  const fountain = new InstancedEvolutive(fountainAsset.geometry, fountainAsset.material, [
+    { x: 0, z: 0, appearAt: 92, growStart: 92, growEnd: 95, maxScale: 1 },
+  ]);
   fountain.mesh.name = 'fountain';
 
-  const boatGeometry = mergeParts(
-    coloredBox(2.4, 0.4, 1.0, 0x6e4f2e, 0.3),
-    coloredBox(0.1, 1.4, 0.1, 0x5c4226, 1.0),
-    coloredBox(0.7, 0.5, 0.05, 0xc94a3a, 1.35),
-  );
-  const boats = new InstancedEvolutive(boatGeometry, poolMaterial(), [
+  const boatAsset = models.pool('boat', () => ({
+    geometry: mergeParts(
+      coloredBox(2.4, 0.4, 1.0, 0x6e4f2e, 0.3),
+      coloredBox(0.1, 1.4, 0.1, 0x5c4226, 1.0),
+      coloredBox(0.7, 0.5, 0.05, 0xc94a3a, 1.35),
+    ),
+    material: poolMaterial(),
+  }));
+  const boats = new InstancedEvolutive(boatAsset.geometry, boatAsset.material, [
     // structured dock boat appears with the Commercial Center stage
     { x: 8, z: RIVER.z, rotationY: 0.3, appearAt: 42, growStart: 42, growEnd: 45, maxScale: 1 },
     // decorated festival boats
@@ -94,44 +103,46 @@ export function createFestivalProps(): InstancedEvolutive[] {
 }
 
 /** Wooden bridge (Growing Village) → stone bridge (Expansion) over the river. */
-export function createBridges(): InstancedEvolutive[] {
+export function createBridges(models: ModelLibrary = EMPTY_MODELS): InstancedEvolutive[] {
   const span = RIVER.width + 3;
-  const wooden = new InstancedEvolutive(
-    mergeParts(
+  const woodenAsset = models.pool('bridge-wood', () => ({
+    geometry: mergeParts(
       coloredBox(3, 0.25, span, 0x8a6a42, 0.55),
       coloredBox(0.15, 0.5, span, 0x5c4226, 0.9),
     ),
-    poolMaterial(),
-    [
-      {
-        x: 0,
-        z: RIVER.z,
-        appearAt: 22,
-        growStart: 22,
-        growEnd: 26,
-        maxScale: 1,
-        retireAt: 62,
-        retireSpan: 4,
-      },
-    ],
-  );
+    material: poolMaterial(),
+  }));
+  const wooden = new InstancedEvolutive(woodenAsset.geometry, woodenAsset.material, [
+    {
+      x: 0,
+      z: RIVER.z,
+      appearAt: 22,
+      growStart: 22,
+      growEnd: 26,
+      maxScale: 1,
+      retireAt: 62,
+      retireSpan: 4,
+    },
+  ]);
   wooden.mesh.name = 'bridge-wood';
 
-  const stone = new InstancedEvolutive(
-    mergeParts(
+  const stoneAsset = models.pool('bridge-stone', () => ({
+    geometry: mergeParts(
       coloredBox(3.6, 0.4, span, 0x9d968a, 0.6),
       coloredBox(0.25, 0.6, span, 0x7b756b, 1.0),
     ),
-    poolMaterial(),
-    [{ x: 0, z: RIVER.z, appearAt: 62, growStart: 62, growEnd: 66, maxScale: 1 }],
-  );
+    material: poolMaterial(),
+  }));
+  const stone = new InstancedEvolutive(stoneAsset.geometry, stoneAsset.material, [
+    { x: 0, z: RIVER.z, appearAt: 62, growStart: 62, growEnd: 66, maxScale: 1 },
+  ]);
   stone.mesh.name = 'bridge-stone';
 
   return [wooden, stone];
 }
 
 /** Construction scaffolds occupying each build-event window (micro-narrative). */
-export function createScaffolds(): InstancedEvolutive {
+export function createScaffolds(models: ModelLibrary = EMPTY_MODELS): InstancedEvolutive {
   const sites: Array<{ at: number; x: number; z: number }> = [
     { at: 30, x: 4, z: 8 }, // new housing near the plaza
     { at: 45, x: SITES.cathedral.x, z: SITES.cathedral.z + 4 },
@@ -150,12 +161,15 @@ export function createScaffolds(): InstancedEvolutive {
     retireAt: at + 3,
     retireSpan: 3,
   }));
-  const geometry = mergeParts(
-    coloredBox(0.15, 3, 0.15, 0xa88c5f),
-    coloredBox(2.4, 0.12, 0.8, 0xa88c5f, 1.5),
-    coloredBox(2.4, 0.12, 0.8, 0xa88c5f, 2.6),
-  );
-  const scaffolds = new InstancedEvolutive(geometry, poolMaterial(), instances);
+  const asset = models.pool('scaffold', () => ({
+    geometry: mergeParts(
+      coloredBox(0.15, 3, 0.15, 0xa88c5f),
+      coloredBox(2.4, 0.12, 0.8, 0xa88c5f, 1.5),
+      coloredBox(2.4, 0.12, 0.8, 0xa88c5f, 2.6),
+    ),
+    material: poolMaterial(),
+  }));
+  const scaffolds = new InstancedEvolutive(asset.geometry, asset.material, instances);
   scaffolds.mesh.name = 'scaffolds';
   return scaffolds;
 }

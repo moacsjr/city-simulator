@@ -4,3 +4,6 @@ dist/
 CLAUDE.local.md
 .claude/settings.local.json
 screenshots/
+
+# generated .glb starter templates (npm run export:models)
+public/assets/model-templates/

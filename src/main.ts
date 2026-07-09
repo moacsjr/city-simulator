@@ -20,6 +20,8 @@ import {
 } from './instanced/props';
 import { createRoads } from './instanced/roads';
 import { createWalls } from './instanced/walls';
+import { MODEL_MANIFEST } from './models/manifest';
+import { loadModelLibrary } from './models/modelLibrary';
 import { NpcSystem } from './npc/npcSystem';
 import { createCamp } from './landmarks/camp';
 import { createWatermill, createWindmill } from './landmarks/mills';
@@ -39,6 +41,8 @@ import { PerfHud } from './ui/perfHud';
 const quality = detectQuality();
 const store = new ProgressStore();
 const root = await createSceneRoot(quality.pixelRatioCap);
+// Swappable GLTF assets (public/assets/models/<id>.glb); missing → procedural.
+const models = await loadModelLibrary(MODEL_MANIFEST);
 const registry = new Registry();
 
 registry.add(new LightingDirector(root.scene));
@@ -47,37 +51,37 @@ const terrain = createTerrain();
 root.scene.add(terrain.group);
 registry.add(terrain.driver);
 
-const banners = createBanners();
+const banners = createBanners(53, models);
 const instancedSystems = [
-  createForest(1, quality.treeCount),
-  createRoads(),
-  createWell(),
-  createTavern(),
-  createStable(),
-  createDock(),
-  createMarketStalls(),
-  ...createHouses(),
-  ...createAgriculture(),
-  ...createWalls(),
-  ...createAnimals(),
-  ...createBridges(),
-  ...createFestivalProps(),
+  createForest(1, quality.treeCount, models),
+  createRoads(models),
+  createWell(models),
+  createTavern(models),
+  createStable(models),
+  createDock(models),
+  createMarketStalls(31, 10, models),
+  ...createHouses(11, 140, models),
+  ...createAgriculture(23, 36, models),
+  ...createWalls(models),
+  ...createAnimals(41, models),
+  ...createBridges(models),
+  ...createFestivalProps(models),
   banners,
-  createScaffolds(),
+  createScaffolds(models),
 ];
 for (const system of instancedSystems) {
   root.scene.add(system.mesh);
   registry.add(system);
 }
 
-const watermill = createWatermill();
-const windmill = createWindmill();
-const cathedral = createCathedral();
+const watermill = createWatermill(models);
+const windmill = createWindmill(models);
+const cathedral = createCathedral(models);
 const landmarks = [
-  ...createCamp(),
-  ...createCastle(),
+  ...createCamp(models),
+  ...createCastle(models),
   ...cathedral.evolutives,
-  createTownHall(),
+  createTownHall(models),
   watermill.evolutive,
   windmill.evolutive,
 ];

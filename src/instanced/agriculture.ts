@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { chainWindows, FIELD_BANDS } from '../lib/chains';
 import { generateFieldPlots } from '../layout/cityLayout';
+import type { InstancedModelId } from '../models/manifest';
+import { EMPTY_MODELS, type ModelLibrary } from '../models/modelLibrary';
 import { InstancedEvolutive, type InstanceDescriptor } from './instancedEvolutive';
 
 /** Agriculture chain: gardens → plowed fields → farms → vineyards (color + size). */
@@ -12,7 +14,11 @@ const LEVEL_STYLE = [
   { size: 9.0, from: 0x6a7a35, to: 0x7d8a3a }, // vineyards
 ] as const;
 
-export function createAgriculture(seed = 23, plotCount = 36): InstancedEvolutive[] {
+export function createAgriculture(
+  seed = 23,
+  plotCount = 36,
+  models: ModelLibrary = EMPTY_MODELS,
+): InstancedEvolutive[] {
   const plots = generateFieldPlots(seed, plotCount);
   const perLevel: InstanceDescriptor[][] = LEVEL_STYLE.map(() => []);
 
@@ -38,9 +44,11 @@ export function createAgriculture(seed = 23, plotCount = 36): InstancedEvolutive
     .map((instances, level) => {
       if (instances.length === 0) return null;
       const style = LEVEL_STYLE[level];
-      const geometry = new THREE.BoxGeometry(style.size, 0.12, style.size * 0.8);
-      const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 });
-      const pool = new InstancedEvolutive(geometry, material, instances);
+      const asset = models.pool(`field-l${level}` as InstancedModelId, () => ({
+        geometry: new THREE.BoxGeometry(style.size, 0.12, style.size * 0.8),
+        material: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }),
+      }));
+      const pool = new InstancedEvolutive(asset.geometry, asset.material, instances);
       pool.mesh.name = `fields-l${level}`;
       return pool;
     })
